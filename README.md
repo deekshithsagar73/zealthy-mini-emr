@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zealthy Mini-EMR and Patient Portal
+
+A modern, professional Mini-EMR and Patient Portal application built with Next.js, Tailwind CSS, and Prisma.
+
+## Features
+
+### Patient Portal
+- **Secure Login**: Patient authentication with session management.
+- **Dashboard**: At-a-glance view of upcoming appointments and refill schedules.
+- **Appointments**: Detailed timeline view of upcoming visits.
+- **Prescriptions**: Grid view of active medications and refill statuses.
+- **Responsive Design**: Fully optimized for mobile and desktop.
+
+### Mini-EMR (Admin)
+- **Patient Management**: Create, view, and update patient records.
+- **Appointment Management**: Schedule and modify appointments.
+- **Prescription Management**: Prescribe medications and manage refills.
+- **Professional UI**: Clean, high-contrast interface for clinical efficiency.
+
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Database**: SQLite (with Prisma ORM)
+- **Icons**: Lucide React
 
 ## Getting Started
 
-First, run the development server:
+1.  **Clone the repository**
+    ```bash
+    git clone <repository-url>
+    cd zealthy-app
+    ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up the database**
+    ```bash
+    npx prisma migrate dev --name init
+    npx prisma db seed
+    ```
+
+4.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+    Open [http://localhost:3000](http://localhost:3000) to view the Patient Portal.
+    Open [http://localhost:3000/admin](http://localhost:3000/admin) to access the EMR.
+
+## Deployment
+
+### Vercel Deployment Note
+This application uses **SQLite** for simplicity and ease of setup. 
+- **Important**: If deploying to Vercel, the SQLite database will be **read-only** or **ephemeral** (resetting on every redeploy/function invocation) because Vercel Serverless functions do not have a persistent writable file system.
+- **Recommendation**: For a persistent production deployment, switch the Prisma provider to PostgreSQL (e.g., Vercel Postgres, Neon, or Supabase) in `prisma/schema.prisma` and update the `DATABASE_URL` environment variable.
+
+### Build Scripts
+The `package.json` includes a `postinstall` script to ensure Prisma client is generated during deployment:
+```json
+"postinstall": "prisma generate"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Project Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app`: Next.js App Router pages and layouts.
+- `src/components`: Reusable UI components.
+- `src/actions`: Server Actions for data mutation (CRUD).
+- `src/lib`: Utility functions and shared logic.
+- `prisma`: Database schema and seed scripts.
