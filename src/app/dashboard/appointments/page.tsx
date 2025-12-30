@@ -5,6 +5,8 @@ import { addMonths, startOfDay } from 'date-fns'
 import { cookies } from 'next/headers'
 import { Appointment } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AppointmentsPage() {
     const cookieStore = await cookies()
     const sessionId = cookieStore.get('patient_session')?.value
