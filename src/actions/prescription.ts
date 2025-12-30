@@ -30,8 +30,8 @@ export async function createPrescription(userId: number, formData: FormData) {
                 userId,
             },
         })
-    } catch (error: any) {
-        return { error: error.message || 'Failed to create prescription' }
+    } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : 'Failed to create prescription' }
     }
 
     revalidatePath(`/admin/patients/${userId}`)
@@ -46,7 +46,7 @@ export async function deletePrescription(id: number) {
         await db.prescription.delete({
             where: { id },
         })
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Failed to delete prescription:', error)
     }
     revalidatePath('/admin')
@@ -81,8 +81,8 @@ export async function updatePrescription(id: number, formData: FormData) {
                 refillSchedule,
             },
         })
-    } catch (error: any) {
-        return { error: error.message || 'Failed to update prescription' }
+    } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : 'Failed to update prescription' }
     }
 
     revalidatePath('/admin')

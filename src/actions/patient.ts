@@ -12,7 +12,7 @@ export async function getPatient(id: number) {
     return await db.user.findUnique({ where: { id } })
 }
 
-export async function createPatient(prevState: any, formData: FormData) {
+export async function createPatient(_prevState: { error: string } | null, formData: FormData) {
     const name = (formData.get('name') as string)?.trim()
     const email = (formData.get('email') as string)?.trim()
     const password = formData.get('password') as string
@@ -30,8 +30,8 @@ export async function createPatient(prevState: any, formData: FormData) {
                 password,
             },
         })
-    } catch (error: any) {
-        return { error: error.message || 'Failed to create patient' }
+    } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : 'Failed to create patient' }
     }
 
     revalidatePath('/admin/patients')
@@ -54,8 +54,8 @@ export async function updatePatient(id: number, formData: FormData) {
                 email,
             },
         })
-    } catch (error: any) {
-        return { error: error.message || 'Failed to update patient' }
+    } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : 'Failed to update patient' }
     }
 
     revalidatePath(`/admin/patients/${id}`)

@@ -24,8 +24,8 @@ export async function createAppointment(userId: number, formData: FormData) {
                 userId,
             },
         })
-    } catch (error: any) {
-        return { error: error.message || 'Failed to schedule appointment' }
+    } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : 'Failed to schedule appointment' }
     }
 
     revalidatePath(`/admin/patients/${userId}`)
@@ -40,7 +40,7 @@ export async function deleteAppointment(id: number) {
         await db.appointment.delete({
             where: { id },
         })
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Failed to delete appointment:', error)
     }
     revalidatePath('/admin')
@@ -69,8 +69,8 @@ export async function updateAppointment(id: number, formData: FormData) {
                 repeat,
             },
         })
-    } catch (error: any) {
-        return { error: error.message || 'Failed to update appointment' }
+    } catch (error: unknown) {
+        return { error: error instanceof Error ? error.message : 'Failed to update appointment' }
     }
 
     revalidatePath('/admin')

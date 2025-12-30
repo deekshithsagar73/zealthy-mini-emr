@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserWithRelations } from '@/lib/db'
 import { Plus, Users, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { unstable_noStore } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PatientsPage() {
+    unstable_noStore()
     const patients = await getPatients()
 
     return (

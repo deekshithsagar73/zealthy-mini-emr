@@ -1,14 +1,16 @@
 import { getPatient } from '@/actions/patient'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { generateRefillSchedule, ScheduleItem } from '@/lib/schedule'
-import { addMonths, format, isToday, isTomorrow, isPast, differenceInDays, startOfDay } from 'date-fns'
+import { addMonths, format, isToday, isPast, differenceInDays, startOfDay } from 'date-fns'
 import { cookies } from 'next/headers'
 import { Prescription } from '@/lib/db'
 import { Pill, Calendar, AlertCircle, Clock, Package } from 'lucide-react'
+import { unstable_noStore } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
 
 export default async function PrescriptionsPage() {
+    unstable_noStore()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get('patient_session')?.value
 

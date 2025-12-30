@@ -7,11 +7,12 @@ import { Calendar, Pill, ArrowRight, Activity } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-
+import { unstable_noStore } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
+    unstable_noStore()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get('patient_session')?.value
 

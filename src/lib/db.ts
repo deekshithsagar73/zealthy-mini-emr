@@ -1,12 +1,25 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, User, Appointment, Prescription } from '@prisma/client'
 
-const globalForPrisma = globalThis as unknown as {
-    prisma: PrismaClient | undefined
+const prismaClientSingleton = () => {
+    return new PrismaClient()
 }
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
+declare global {
+    var prisma: undefined | ReturnType<typeof prismaClientSingleton>
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+export const prisma = globalThis.prisma ?? prismaClientSingleton()
+
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma
+
+export type UserWithRelations = User & {
+    appointments: Appointment[]
+    prescriptions: Prescription[]
+    _count?: {
+        appointments: number
+        prescriptions: number
+    }
+}
 
 const validateEmail = (email: string) => {
     return String(email)
@@ -18,7 +31,7 @@ const validateEmail = (email: string) => {
 
 export const db = {
     user: {
-        findMany: async () => {
+        findMany: async (): Promise<UserWithRelations[]> => {
             return await prisma.user.findMany({
                 include: {
                     appointments: true,
@@ -33,16 +46,16 @@ export const db = {
                 orderBy: {
                     name: 'asc',
                 },
-            })
+            }) as UserWithRelations[]
         },
-        findUnique: async (args: { where: { id?: number; email?: string } }) => {
+        findUnique: async (args: { where: { id?: number; email?: string } }): Promise<UserWithRelations | null> => {
             return await prisma.user.findUnique({
                 where: args.where as any,
                 include: {
                     appointments: true,
                     prescriptions: true,
                 },
-            })
+            }) as UserWithRelations | null
         },
         create: async (args: { data: { name: string; email: string; password: string } }) => {
             if (!args.data.name.trim()) throw new Error('Name is required.')
@@ -153,5 +166,4 @@ export const db = {
     },
 }
 
-export type { User, Appointment, Prescription } from '@prisma/client'
-export type UserWithRelations = any
+export type { User, Appointment, Prescription }

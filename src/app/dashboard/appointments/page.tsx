@@ -4,10 +4,12 @@ import { generateAppointmentSchedule, ScheduleItem } from '@/lib/schedule'
 import { addMonths, startOfDay } from 'date-fns'
 import { cookies } from 'next/headers'
 import { Appointment } from '@/lib/db'
+import { unstable_noStore } from 'next/cache'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AppointmentsPage() {
+    unstable_noStore()
     const cookieStore = await cookies()
     const sessionId = cookieStore.get('patient_session')?.value
 
