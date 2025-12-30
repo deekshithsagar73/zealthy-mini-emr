@@ -2,7 +2,7 @@
 
 A modern Electronic Medical Record (EMR) application built with Next.js, Prisma, and Supabase.
 
-## 🚀 Live Demo
+## Live Demo
 
 The application is deployed on Vercel and connected to a live Supabase database:
 
