@@ -1,31 +1,15 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export async function getPatients() {
-    return await prisma.user.findMany({
-        orderBy: { name: 'asc' },
-        include: {
-            _count: {
-                select: {
-                    appointments: true,
-                    prescriptions: true,
-                },
-            },
-        },
-    })
+    return await db.user.findMany()
 }
 
 export async function getPatient(id: number) {
-    return await prisma.user.findUnique({
-        where: { id },
-        include: {
-            appointments: true,
-            prescriptions: true,
-        },
-    })
+    return await db.user.findUnique({ where: { id } })
 }
 
 export async function createPatient(formData: FormData) {
@@ -33,7 +17,7 @@ export async function createPatient(formData: FormData) {
     const email = formData.get('email') as string
     const password = formData.get('password') as string
 
-    await prisma.user.create({
+    await db.user.create({
         data: {
             name,
             email,
@@ -49,7 +33,7 @@ export async function updatePatient(id: number, formData: FormData) {
     const name = formData.get('name') as string
     const email = formData.get('email') as string
 
-    await prisma.user.update({
+    await db.user.update({
         where: { id },
         data: {
             name,

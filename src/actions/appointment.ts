@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 
 export async function createAppointment(userId: number, formData: FormData) {
@@ -8,7 +8,7 @@ export async function createAppointment(userId: number, formData: FormData) {
     const datetime = formData.get('datetime') as string
     const repeat = formData.get('repeat') as string
 
-    await prisma.appointment.create({
+    await db.appointment.create({
         data: {
             provider,
             datetime: new Date(datetime),
@@ -24,7 +24,7 @@ export async function createAppointment(userId: number, formData: FormData) {
 }
 
 export async function deleteAppointment(id: number) {
-    await prisma.appointment.delete({
+    await db.appointment.delete({
         where: { id },
     })
     revalidatePath('/admin')
@@ -37,7 +37,7 @@ export async function updateAppointment(id: number, formData: FormData) {
     const datetime = formData.get('datetime') as string
     const repeat = formData.get('repeat') as string
 
-    await prisma.appointment.update({
+    await db.appointment.update({
         where: { id },
         data: {
             provider,

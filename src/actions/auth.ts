@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -12,7 +12,7 @@ export async function login(prevState: unknown, formData: FormData) {
         return { error: 'Email and password are required' }
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
         where: { email },
     })
 

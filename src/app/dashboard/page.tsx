@@ -1,10 +1,13 @@
-import { Appointment, Prescription } from '@prisma/client'
+import { Appointment, Prescription } from '@/lib/db'
 import { getPatient } from '@/actions/patient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { addDays, format, isBefore } from 'date-fns'
+import { generateAppointmentSchedule, generateRefillSchedule, ScheduleItem } from '@/lib/schedule'
+import { addDays, format, startOfDay } from 'date-fns'
 import { Calendar, Pill, ArrowRight, Activity } from 'lucide-react'
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
+
 
 export const dynamic = 'force-dynamic'
 
@@ -15,20 +18,28 @@ export default async function DashboardPage() {
     if (!sessionId) return null
 
     const patient = await getPatient(parseInt(sessionId))
-    if (!patient) return <div>Patient not found</div>
+    if (!patient) {
+        redirect('/')
+    }
 
-    const today = new Date()
+
+    const today = startOfDay(new Date())
     const nextWeek = addDays(today, 7)
 
-    const upcomingAppointments = patient.appointments.filter((a: Appointment) => {
-        const date = new Date(a.datetime)
-        return isBefore(date, nextWeek) && date >= today
+    let upcomingAppointments: ScheduleItem[] = []
+    patient.appointments.forEach((app: Appointment) => {
+        const schedule = generateAppointmentSchedule(app, today, nextWeek)
+        upcomingAppointments = [...upcomingAppointments, ...schedule]
     })
 
-    const upcomingRefills = patient.prescriptions.filter((p: Prescription) => {
-        const date = new Date(p.refillOn)
-        return isBefore(date, nextWeek) && date >= today
+    let upcomingRefills: ScheduleItem[] = []
+    patient.prescriptions.forEach((p: Prescription) => {
+        const schedule = generateRefillSchedule(p, today, nextWeek)
+        upcomingRefills = [...upcomingRefills, ...schedule]
     })
+
+    upcomingAppointments.sort((a, b) => a.date.getTime() - b.date.getTime())
+    upcomingRefills.sort((a, b) => a.date.getTime() - b.date.getTime())
 
     return (
         <div className="space-y-8">
@@ -99,11 +110,11 @@ export default async function DashboardPage() {
                             <div className="p-6 text-center text-muted-foreground bg-white">No appointments scheduled.</div>
                         ) : (
                             <div className="divide-y">
-                                {upcomingAppointments.map((app: Appointment) => (
-                                    <div key={app.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between">
+                                {upcomingAppointments.map((item: ScheduleItem, index: number) => (
+                                    <div key={`${item.originalId}-${index}`} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between">
                                         <div>
-                                            <p className="font-semibold text-gray-900">{app.provider}</p>
-                                            <p className="text-sm text-muted-foreground">{format(new Date(app.datetime), 'PPP p')}</p>
+                                            <p className="font-semibold text-gray-900">{(item.details as Appointment).provider}</p>
+                                            <p className="text-sm text-muted-foreground">{format(item.date, 'PPP p')}</p>
                                         </div>
                                         <div className="h-2 w-2 rounded-full bg-green-500" />
                                     </div>
@@ -130,11 +141,11 @@ export default async function DashboardPage() {
                             <div className="p-6 text-center text-muted-foreground bg-white">No refills due.</div>
                         ) : (
                             <div className="divide-y">
-                                {upcomingRefills.map((rx: Prescription) => (
-                                    <div key={rx.id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between">
+                                {upcomingRefills.map((item: ScheduleItem, index: number) => (
+                                    <div key={`${item.originalId}-${index}`} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between">
                                         <div>
-                                            <p className="font-semibold text-gray-900">{rx.medication} ({rx.dosage})</p>
-                                            <p className="text-sm text-muted-foreground">Refill on: {format(new Date(rx.refillOn), 'PPP')}</p>
+                                            <p className="font-semibold text-gray-900">{(item.details as Prescription).medication} ({(item.details as Prescription).dosage})</p>
+                                            <p className="text-sm text-muted-foreground">Refill on: {format(item.date, 'PPP')}</p>
                                         </div>
                                         <div className="h-2 w-2 rounded-full bg-green-500" />
                                     </div>

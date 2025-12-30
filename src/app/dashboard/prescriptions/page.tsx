@@ -1,9 +1,9 @@
 import { getPatient } from '@/actions/patient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { generateRefillSchedule, ScheduleItem } from '@/lib/schedule'
-import { addMonths, format, isToday, isTomorrow, isPast, differenceInDays } from 'date-fns'
+import { addMonths, format, isToday, isTomorrow, isPast, differenceInDays, startOfDay } from 'date-fns'
 import { cookies } from 'next/headers'
-import { Prescription } from '@prisma/client'
+import { Prescription } from '@/lib/db'
 import { Pill, Calendar, AlertCircle, Clock, Package } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -17,8 +17,9 @@ export default async function PrescriptionsPage() {
     const patient = await getPatient(parseInt(sessionId))
     if (!patient) return <div>Patient not found</div>
 
-    const today = new Date()
+    const today = startOfDay(new Date())
     const threeMonthsOut = addMonths(today, 3)
+
 
     let allRefills: ScheduleItem[] = []
     patient.prescriptions.forEach((rx: Prescription) => {
@@ -116,21 +117,19 @@ export default async function PrescriptionsPage() {
                                 const prescription = item.details as Prescription
                                 const urgency = getRefillUrgency(item.date)
                                 const isPastRefill = isPast(item.date) && !isToday(item.date)
-                                
+
                                 return (
-                                    <Card 
-                                        key={`${item.originalId}-${index}`} 
-                                        className={`border transition-all group overflow-hidden ${
-                                            isPastRefill 
-                                                ? 'border-red-200 bg-red-50/30' 
-                                                : 'border-gray-300 shadow-sm hover:shadow-md bg-white'
-                                        }`}
+                                    <Card
+                                        key={`${item.originalId}-${index}`}
+                                        className={`border transition-all group overflow-hidden ${isPastRefill
+                                            ? 'border-red-200 bg-red-50/30'
+                                            : 'border-gray-300 shadow-sm hover:shadow-md bg-white'
+                                            }`}
                                     >
-                                        <div className={`h-1 w-full ${
-                                            isPastRefill 
-                                                ? 'bg-gradient-to-r from-red-400 to-red-500' 
-                                                : 'bg-gradient-to-r from-green-400 to-emerald-500'
-                                        }`} />
+                                        <div className={`h-1 w-full ${isPastRefill
+                                            ? 'bg-gradient-to-r from-red-400 to-red-500'
+                                            : 'bg-gradient-to-r from-green-400 to-emerald-500'
+                                            }`} />
                                         <CardContent className="p-5">
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex-1">
@@ -147,9 +146,8 @@ export default async function PrescriptionsPage() {
                                                     </p>
                                                 </div>
                                                 <div className="text-right ml-4">
-                                                    <div className={`text-2xl font-bold ${
-                                                        isPastRefill ? 'text-red-600' : 'text-gray-900'
-                                                    }`}>
+                                                    <div className={`text-2xl font-bold ${isPastRefill ? 'text-red-600' : 'text-gray-900'
+                                                        }`}>
                                                         {format(item.date, 'd')}
                                                     </div>
                                                     <div className="text-xs text-gray-500 uppercase font-medium">

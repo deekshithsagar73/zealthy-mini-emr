@@ -1,9 +1,9 @@
 import { getPatient } from '@/actions/patient'
 import { AppointmentList } from '@/components/dashboard/AppointmentList'
 import { generateAppointmentSchedule, ScheduleItem } from '@/lib/schedule'
-import { addMonths } from 'date-fns'
+import { addMonths, startOfDay } from 'date-fns'
 import { cookies } from 'next/headers'
-import { Appointment } from '@prisma/client'
+import { Appointment } from '@/lib/db'
 
 export default async function AppointmentsPage() {
     const cookieStore = await cookies()
@@ -14,8 +14,9 @@ export default async function AppointmentsPage() {
     const patient = await getPatient(parseInt(sessionId))
     if (!patient) return <div>Patient not found</div>
 
-    const today = new Date()
+    const today = startOfDay(new Date())
     const threeMonthsOut = addMonths(today, 3)
+
 
     let allAppointments: ScheduleItem[] = []
     patient.appointments.forEach((app: Appointment) => {

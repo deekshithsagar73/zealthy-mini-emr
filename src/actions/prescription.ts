@@ -1,6 +1,6 @@
 'use server'
 
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 
 export async function createPrescription(userId: number, formData: FormData) {
@@ -10,7 +10,7 @@ export async function createPrescription(userId: number, formData: FormData) {
     const refillOn = formData.get('refillOn') as string
     const refillSchedule = formData.get('refillSchedule') as string
 
-    await prisma.prescription.create({
+    await db.prescription.create({
         data: {
             medication,
             dosage,
@@ -28,7 +28,7 @@ export async function createPrescription(userId: number, formData: FormData) {
 }
 
 export async function deletePrescription(id: number) {
-    await prisma.prescription.delete({
+    await db.prescription.delete({
         where: { id },
     })
     revalidatePath('/admin')
@@ -43,7 +43,7 @@ export async function updatePrescription(id: number, formData: FormData) {
     const refillOn = formData.get('refillOn') as string
     const refillSchedule = formData.get('refillSchedule') as string
 
-    await prisma.prescription.update({
+    await db.prescription.update({
         where: { id },
         data: {
             medication,

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Modal } from '@/components/ui/modal'
-import { User } from '@prisma/client'
+import { User } from '@/lib/db'
 import { useState } from 'react'
 
 interface EditPatientFormProps {

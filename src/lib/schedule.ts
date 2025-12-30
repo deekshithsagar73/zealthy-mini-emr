@@ -1,4 +1,4 @@
-import { Appointment, Prescription } from '@prisma/client'
+import { Appointment, Prescription } from '@/lib/db'
 import { addMonths, addWeeks, isBefore, isSameDay } from 'date-fns'
 
 export type ScheduleItem = {

@@ -1,7 +1,7 @@
 import { getPatients } from '@/actions/patient'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { User } from '@prisma/client'
+import { User } from '@/lib/db'
 import { Plus, Users, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 

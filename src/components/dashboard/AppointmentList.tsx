@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card'
 import { ScheduleItem } from '@/lib/schedule'
-import { Appointment } from '@prisma/client'
+import { Appointment } from '@/lib/db'
 import { format, isToday, isTomorrow, isPast } from 'date-fns'
 import { Calendar, Clock, MapPin, ChevronDown, Repeat } from 'lucide-react'
 import { useState } from 'react'

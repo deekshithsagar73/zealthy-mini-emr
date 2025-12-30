@@ -1,4 +1,4 @@
-import { Appointment, Prescription } from '@prisma/client'
+import { Appointment, Prescription } from '@/lib/db'
 import { deleteAppointment } from '@/actions/appointment'
 import { getPatient } from '@/actions/patient'
 import { deletePrescription } from '@/actions/prescription'

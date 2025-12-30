@@ -2,13 +2,13 @@ import { getPatients } from '@/actions/patient'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Calendar, Pill, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { prisma } from '@/lib/prisma'
+import { db } from '@/lib/db'
 
 export default async function AdminPage() {
     const patients = await getPatients()
     const totalPatients = patients.length
-    const totalAppointments = await prisma.appointment.count()
-    const totalPrescriptions = await prisma.prescription.count()
+    const totalAppointments = await db.appointment.count()
+    const totalPrescriptions = await db.prescription.count()
 
     return (
         <div className="space-y-8">

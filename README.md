@@ -1,29 +1,29 @@
-# Zealthy Mini-EMR and Patient Portal
+# Zealthy Mini-EMR & Patient Portal
 
-A modern, professional Mini-EMR and Patient Portal application built with Next.js, Tailwind CSS, and Prisma.
+A streamlined Electronic Medical Record (EMR) system and Patient Portal built for clinical efficiency and patient engagement. This application provides a seamless interface for both healthcare providers and patients to manage records, appointments, and prescriptions.
 
-## Features
+## Core Features
 
 ### Patient Portal
-- **Secure Login**: Patient authentication with session management.
-- **Dashboard**: At-a-glance view of upcoming appointments and refill schedules.
-- **Appointments**: Detailed timeline view of upcoming visits.
-- **Prescriptions**: Grid view of active medications and refill statuses.
-- **Responsive Design**: Fully optimized for mobile and desktop.
+*   **Secure Access**: Personalized login for patients to access their health data.
+*   **Health Overview**: A comprehensive dashboard showing upcoming appointments and medication refills.
+*   **Appointment Tracking**: View and manage scheduled visits with healthcare providers.
+*   **Prescription Management**: Keep track of active medications, dosages, and refill schedules.
+*   **Mobile Optimized**: Responsive design for access on any device.
 
 ### Mini-EMR (Admin)
-- **Patient Management**: Create, view, and update patient records.
-- **Appointment Management**: Schedule and modify appointments.
-- **Prescription Management**: Prescribe medications and manage refills.
-- **Professional UI**: Clean, high-contrast interface for clinical efficiency.
+*   **Patient Records**: Centralized management of patient profiles and history.
+*   **Scheduling**: Efficient tools for creating and modifying patient appointments.
+*   **Clinical Prescriptions**: Streamlined workflow for prescribing medications and managing refills.
+*   **Professional Interface**: High-contrast, clean UI designed for fast-paced clinical environments.
 
-## Tech Stack
+## Technology Stack
 
-- **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **Database**: SQLite (with Prisma ORM)
-- **Icons**: Lucide React
+*   **Framework**: Next.js 15 (App Router)
+*   **Language**: TypeScript
+*   **Styling**: Tailwind CSS v4
+*   **Data Layer**: In-memory data store (optimized for rapid deployment and testing)
+*   **Icons**: Lucide React
 
 ## Getting Started
 
@@ -38,37 +38,25 @@ A modern, professional Mini-EMR and Patient Portal application built with Next.j
     npm install
     ```
 
-3.  **Set up the database**
-    ```bash
-    npx prisma migrate dev --name init
-    npx prisma db seed
-    ```
-
-4.  **Run the development server**
+3.  **Run the development server**
     ```bash
     npm run dev
     ```
 
-    Open [http://localhost:3000](http://localhost:3000) to view the Patient Portal.
-    Open [http://localhost:3000/admin](http://localhost:3000/admin) to access the EMR.
+    *   **Patient Portal**: [http://localhost:3000](http://localhost:3000)
+    *   **Admin EMR**: [http://localhost:3000/admin](http://localhost:3000/admin)
 
-## Deployment
+## Data Management
 
-### Vercel Deployment Note
-This application uses **SQLite** for simplicity and ease of setup. 
-- **Important**: If deploying to Vercel, the SQLite database will be **read-only** or **ephemeral** (resetting on every redeploy/function invocation) because Vercel Serverless functions do not have a persistent writable file system.
-- **Recommendation**: For a persistent production deployment, switch the Prisma provider to PostgreSQL (e.g., Vercel Postgres, Neon, or Supabase) in `prisma/schema.prisma` and update the `DATABASE_URL` environment variable.
-
-### Build Scripts
-The `package.json` includes a `postinstall` script to ensure Prisma client is generated during deployment:
-```json
-"postinstall": "prisma generate"
-```
+This version of the application uses an **in-memory data store**. 
+*   **Initial Data**: The system is pre-populated with sample patient records (Mark Johnson and Lisa Smith) to demonstrate the full functionality immediately.
+*   **Persistence**: Data persists during the active session. Note that the store resets if the server process is restarted or redeployed.
+*   **Deployment**: Optimized for zero-config deployment on platforms like Vercel without requiring external database setup.
 
 ## Project Structure
 
-- `src/app`: Next.js App Router pages and layouts.
-- `src/components`: Reusable UI components.
-- `src/actions`: Server Actions for data mutation (CRUD).
-- `src/lib`: Utility functions and shared logic.
-- `prisma`: Database schema and seed scripts.
+*   `src/app`: Application routes and page layouts.
+*   `src/components`: Reusable UI components and design system.
+*   `src/actions`: Server-side logic for data mutations (CRUD).
+*   `src/lib`: Core database logic and shared utilities.
+
