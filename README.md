@@ -2,6 +2,26 @@
 
 A modern Electronic Medical Record (EMR) application built with Next.js, Prisma, and Supabase.
 
+## 🚀 Live Demo
+
+The application is deployed on Vercel and connected to a live Supabase database:
+
+- **Patient Portal**: [https://zealthy-mini.vercel.app](https://zealthy-mini.vercel.app)
+- **Patient Dashboard**: [https://zealthy-mini.vercel.app/dashboard](https://zealthy-mini.vercel.app/dashboard)
+- **Admin Dashboard**: [https://zealthy-mini.vercel.app/admin](https://zealthy-mini.vercel.app/admin)
+
+### Demo Credentials
+
+To test the application, you can use these demo credentials:
+
+**Patient Login:**
+- Email: `mark@some-email-provider.net`
+- Password: `Password123!`
+
+**How to access Admin:**
+- Navigate directly to [/admin](https://zealthy-mini.vercel.app/admin)
+- The admin dashboard has no authentication (for demo purposes)
+
 ## Features
 
 - **Patient Portal**: Patients can view their upcoming appointments and current prescriptions.
