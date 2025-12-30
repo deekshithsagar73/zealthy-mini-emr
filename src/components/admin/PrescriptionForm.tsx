@@ -4,22 +4,40 @@ import { createPrescription } from '@/actions/prescription'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useRef } from 'react'
+import { useState, useRef } from 'react'
+import { AlertCircle } from 'lucide-react'
 import data from '@/lib/data.json'
 
 export function PrescriptionForm({ userId }: { userId: number }) {
     const formRef = useRef<HTMLFormElement>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [isPending, setIsPending] = useState(false)
 
     return (
         <form
             action={async (formData: FormData) => {
-                await createPrescription(userId, formData)
-                formRef.current?.reset()
+                setIsPending(true)
+                setError(null)
+                const result = await createPrescription(userId, formData)
+                setIsPending(false)
+                if (result?.error) {
+                    setError(result.error)
+                } else {
+                    formRef.current?.reset()
+                }
             }}
             ref={formRef}
             className="space-y-4 border p-4 rounded-md bg-gray-50"
         >
             <h3 className="font-medium">Prescribe Medication</h3>
+
+            {error && (
+                <div className="p-3 rounded-md bg-red-50 border border-red-200 flex items-center gap-2 text-red-700 text-sm">
+                    <AlertCircle className="h-4 w-4" />
+                    {error}
+                </div>
+            )}
+
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="medication">Medication</Label>
@@ -66,7 +84,9 @@ export function PrescriptionForm({ userId }: { userId: number }) {
                     </select>
                 </div>
             </div>
-            <Button type="submit" size="sm">Add Prescription</Button>
+            <Button type="submit" size="sm" disabled={isPending}>
+                {isPending ? 'Adding...' : 'Add Prescription'}
+            </Button>
         </form>
     )
 }

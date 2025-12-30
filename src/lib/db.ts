@@ -1,265 +1,157 @@
-type User = {
-    id: number
-    name: string
-    email: string
-    password: string
+import { PrismaClient } from '@prisma/client'
+
+const globalForPrisma = globalThis as unknown as {
+    prisma: PrismaClient | undefined
 }
 
-type Appointment = {
-    id: number
-    provider: string
-    datetime: Date
-    repeat: string
-    userId: number
-}
+export const prisma = globalForPrisma.prisma ?? new PrismaClient()
 
-type Prescription = {
-    id: number
-    medication: string
-    dosage: string
-    quantity: number
-    refillOn: Date
-    refillSchedule: string
-    userId: number
-}
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-type UserWithRelations = User & {
-    appointments: Appointment[]
-    prescriptions: Prescription[]
-    _count?: {
-        appointments: number
-        prescriptions: number
-    }
-}
-
-const globalForDb = globalThis as unknown as {
-    __db: {
-        users: User[]
-        appointments: Appointment[]
-        prescriptions: Prescription[]
-        nextUserId: number
-        nextAppointmentId: number
-        nextPrescriptionId: number
-    }
-}
-
-import seedData from './data.json'
-
-function getDb() {
-    if (!globalForDb.__db) {
-        console.log('Initializing in-memory database...')
-        globalForDb.__db = {
-            users: [],
-            appointments: [],
-            prescriptions: [],
-            nextUserId: 1,
-            nextAppointmentId: 1,
-            nextPrescriptionId: 1,
-        }
-    }
-
-    const db = globalForDb.__db
-
-    // Seed if empty
-    if (db.users.length === 0) {
-        console.log('Seeding in-memory database with dummy data...')
-
-        seedData.users.forEach(user => {
-            const userAppointments = user.appointments.map(apt => ({
-                id: apt.id,
-                provider: apt.provider,
-                datetime: new Date(apt.datetime),
-                repeat: apt.repeat,
-                userId: user.id
-            }))
-            const userPrescriptions = user.prescriptions.map(rx => ({
-                id: rx.id,
-                medication: rx.medication,
-                dosage: rx.dosage,
-                quantity: rx.quantity,
-                refillOn: new Date(rx.refill_on),
-                refillSchedule: rx.refill_schedule,
-                userId: user.id
-            }))
-
-            db.users.push({
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                password: user.password
-            })
-
-            db.appointments.push(...userAppointments)
-            db.prescriptions.push(...userPrescriptions)
-        })
-
-        db.nextUserId = Math.max(...db.users.map(u => u.id), 0) + 1
-        db.nextAppointmentId = Math.max(...db.appointments.map(a => a.id), 0) + 1
-        db.nextPrescriptionId = Math.max(...db.prescriptions.map(p => p.id), 0) + 1
-        console.log(`Seeding complete. ${db.users.length} users loaded.`)
-    }
-
-    return db
+const validateEmail = (email: string) => {
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        )
 }
 
 export const db = {
     user: {
-        findMany: async (): Promise<UserWithRelations[]> => {
-            const db = getDb()
-            return db.users.map(user => {
-                const userAppointments = db.appointments.filter(a => a.userId === user.id)
-                const userPrescriptions = db.prescriptions.filter(p => p.userId === user.id)
-                return {
-                    ...user,
-                    appointments: userAppointments,
-                    prescriptions: userPrescriptions,
+        findMany: async () => {
+            return await prisma.user.findMany({
+                include: {
+                    appointments: true,
+                    prescriptions: true,
                     _count: {
-                        appointments: userAppointments.length,
-                        prescriptions: userPrescriptions.length,
-                    }
-                }
-            }).sort((a, b) => a.name.localeCompare(b.name))
+                        select: {
+                            appointments: true,
+                            prescriptions: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    name: 'asc',
+                },
+            })
         },
-        findUnique: async (args: { where: { id?: number; email?: string } }): Promise<UserWithRelations | null> => {
-            const db = getDb()
-            const user = db.users.find(u =>
-                args.where.id ? u.id === args.where.id : u.email === args.where.email
-            )
-            if (!user) return null
-
-            return {
-                ...user,
-                appointments: db.appointments.filter(a => a.userId === user.id),
-                prescriptions: db.prescriptions.filter(p => p.userId === user.id),
-            }
+        findUnique: async (args: { where: { id?: number; email?: string } }) => {
+            return await prisma.user.findUnique({
+                where: args.where as any,
+                include: {
+                    appointments: true,
+                    prescriptions: true,
+                },
+            })
         },
         create: async (args: { data: { name: string; email: string; password: string } }) => {
-            const db = getDb()
+            if (!args.data.name.trim()) throw new Error('Name is required.')
+            if (!args.data.email.trim()) throw new Error('Email is required.')
+            if (!validateEmail(args.data.email)) throw new Error('Invalid email format.')
+            if (args.data.password.length < 6) throw new Error('Password must be at least 6 characters.')
 
-            // Check for existing email
-            if (db.users.some(u => u.email === args.data.email)) {
+            const existing = await prisma.user.findUnique({ where: { email: args.data.email } })
+            if (existing) {
                 throw new Error('A patient with this email already exists.')
             }
-
-            const newUser: User = {
-                id: db.nextUserId++,
-                name: args.data.name,
-                email: args.data.email,
-                password: args.data.password,
-            }
-            db.users.push(newUser)
-            console.log(`Created new patient: ${newUser.name} (ID: ${newUser.id})`)
-            return newUser
+            return await prisma.user.create({
+                data: args.data,
+            })
         },
         update: async (args: { where: { id: number }; data: { name?: string; email?: string } }) => {
-            const db = getDb()
-            const user = db.users.find(u => u.id === args.where.id)
-            if (!user) throw new Error('User not found')
+            if (args.data.name !== undefined && !args.data.name.trim()) throw new Error('Name cannot be empty.')
+            if (args.data.email !== undefined) {
+                if (!args.data.email.trim()) throw new Error('Email cannot be empty.')
+                if (!validateEmail(args.data.email)) throw new Error('Invalid email format.')
 
-            if (args.data.name) user.name = args.data.name
-            if (args.data.email) {
-                // Check if new email is taken by someone else
-                if (db.users.some(u => u.email === args.data.email && u.id !== args.where.id)) {
+                const existing = await prisma.user.findUnique({ where: { email: args.data.email } })
+                if (existing && existing.id !== args.where.id) {
                     throw new Error('This email is already in use by another patient.')
                 }
-                user.email = args.data.email
             }
-
-            return user
+            return await prisma.user.update({
+                where: args.where,
+                data: args.data,
+            })
         },
     },
     appointment: {
         create: async (args: { data: { provider: string; datetime: Date; repeat: string; userId: number } }) => {
-            const db = getDb()
-            const newAppointment: Appointment = {
-                id: db.nextAppointmentId++,
-                provider: args.data.provider,
-                datetime: args.data.datetime,
-                repeat: args.data.repeat,
-                userId: args.data.userId,
-            }
-            db.appointments.push(newAppointment)
-            return newAppointment
+            if (!args.data.provider.trim()) throw new Error('Provider name is required.')
+            if (args.data.datetime < new Date()) throw new Error('Appointment must be in the future.')
+
+            return await prisma.appointment.create({
+                data: args.data,
+            })
         },
         delete: async (args: { where: { id: number } }) => {
-            const db = getDb()
-            const index = db.appointments.findIndex(a => a.id === args.where.id)
-            if (index === -1) throw new Error('Appointment not found')
-            db.appointments.splice(index, 1)
-            return { id: args.where.id }
+            return await prisma.appointment.delete({
+                where: args.where,
+            })
         },
         update: async (args: { where: { id: number }; data: { provider?: string; datetime?: Date; repeat?: string } }) => {
-            const db = getDb()
-            const appointment = db.appointments.find(a => a.id === args.where.id)
-            if (!appointment) throw new Error('Appointment not found')
+            if (args.data.provider !== undefined && !args.data.provider.trim()) throw new Error('Provider name cannot be empty.')
+            if (args.data.datetime !== undefined && args.data.datetime < new Date()) {
+                throw new Error('Updated appointment time must be in the future.')
+            }
 
-            if (args.data.provider) appointment.provider = args.data.provider
-            if (args.data.datetime) appointment.datetime = args.data.datetime
-            if (args.data.repeat) appointment.repeat = args.data.repeat
-
-            return appointment
+            return await prisma.appointment.update({
+                where: args.where,
+                data: args.data,
+            })
         },
         findMany: async () => {
-            const db = getDb()
-            return db.appointments.map(apt => ({
-                ...apt,
-                user: db.users.find(u => u.id === apt.userId)!
-            }))
+            return await prisma.appointment.findMany({
+                include: {
+                    user: true,
+                },
+            })
         },
         count: async () => {
-            const db = getDb()
-            return db.appointments.length
+            return await prisma.appointment.count()
         },
     },
     prescription: {
         create: async (args: { data: { medication: string; dosage: string; quantity: number; refillOn: Date; refillSchedule: string; userId: number } }) => {
-            const db = getDb()
-            const newPrescription: Prescription = {
-                id: db.nextPrescriptionId++,
-                medication: args.data.medication,
-                dosage: args.data.dosage,
-                quantity: args.data.quantity,
-                refillOn: args.data.refillOn,
-                refillSchedule: args.data.refillSchedule,
-                userId: args.data.userId,
-            }
-            db.prescriptions.push(newPrescription)
-            return newPrescription
+            if (!args.data.medication.trim()) throw new Error('Medication name is required.')
+            if (!args.data.dosage.trim()) throw new Error('Dosage is required.')
+            if (args.data.quantity <= 0) throw new Error('Quantity must be greater than 0.')
+            if (args.data.refillOn < new Date()) throw new Error('Refill date must be in the future.')
+
+            return await prisma.prescription.create({
+                data: args.data,
+            })
         },
         delete: async (args: { where: { id: number } }) => {
-            const db = getDb()
-            const index = db.prescriptions.findIndex(p => p.id === args.where.id)
-            if (index === -1) throw new Error('Prescription not found')
-            db.prescriptions.splice(index, 1)
-            return { id: args.where.id }
+            return await prisma.prescription.delete({
+                where: args.where,
+            })
         },
         update: async (args: { where: { id: number }; data: { medication?: string; dosage?: string; quantity?: number; refillOn?: Date; refillSchedule?: string } }) => {
-            const db = getDb()
-            const prescription = db.prescriptions.find(p => p.id === args.where.id)
-            if (!prescription) throw new Error('Prescription not found')
+            if (args.data.medication !== undefined && !args.data.medication.trim()) throw new Error('Medication name cannot be empty.')
+            if (args.data.dosage !== undefined && !args.data.dosage.trim()) throw new Error('Dosage cannot be empty.')
+            if (args.data.quantity !== undefined && args.data.quantity <= 0) throw new Error('Quantity must be greater than 0.')
+            if (args.data.refillOn !== undefined && args.data.refillOn < new Date()) {
+                throw new Error('Updated refill date must be in the future.')
+            }
 
-            if (args.data.medication) prescription.medication = args.data.medication
-            if (args.data.dosage) prescription.dosage = args.data.dosage
-            if (args.data.quantity !== undefined) prescription.quantity = args.data.quantity
-            if (args.data.refillOn) prescription.refillOn = args.data.refillOn
-            if (args.data.refillSchedule) prescription.refillSchedule = args.data.refillSchedule
-
-            return prescription
+            return await prisma.prescription.update({
+                where: args.where,
+                data: args.data,
+            })
         },
         findMany: async () => {
-            const db = getDb()
-            return db.prescriptions.map(rx => ({
-                ...rx,
-                user: db.users.find(u => u.id === rx.userId)!
-            }))
+            return await prisma.prescription.findMany({
+                include: {
+                    user: true,
+                },
+            })
         },
         count: async () => {
-            const db = getDb()
-            return db.prescriptions.length
+            return await prisma.prescription.count()
         },
     },
 }
 
-export type { User, Appointment, Prescription, UserWithRelations }
-
-
+export type { User, Appointment, Prescription } from '@prisma/client'
+export type UserWithRelations = any

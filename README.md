@@ -1,62 +1,69 @@
-# Zealthy Mini-EMR & Patient Portal
+# Zealthy EMR Application
 
-A streamlined Electronic Medical Record (EMR) system and Patient Portal built for clinical efficiency and patient engagement. This application provides a seamless interface for both healthcare providers and patients to manage records, appointments, and prescriptions.
+A modern Electronic Medical Record (EMR) application built with Next.js, Prisma, and Supabase.
 
-## Core Features
+## Features
 
-### Patient Portal
-*   **Secure Access**: Personalized login for patients to access their health data.
-*   **Health Overview**: A comprehensive dashboard showing upcoming appointments and medication refills.
-*   **Appointment Tracking**: View and manage scheduled visits with healthcare providers.
-*   **Prescription Management**: Keep track of active medications, dosages, and refill schedules.
-*   **Mobile Optimized**: Responsive design for access on any device.
+- **Patient Portal**: Patients can view their upcoming appointments and current prescriptions.
+- **Admin Dashboard**: Administrators can manage patient records, schedule appointments, and issue prescriptions.
+- **Persistent Storage**: Powered by Supabase Postgres for reliable data persistence.
+- **Type-Safe Database Access**: Integrated with Prisma ORM for a robust developer experience.
+- **Robust Validation**: Comprehensive input validation and logical constraints to ensure data integrity.
 
-### Mini-EMR (Admin)
-*   **Patient Records**: Centralized management of patient profiles and history.
-*   **Scheduling**: Efficient tools for creating and modifying patient appointments.
-*   **Clinical Prescriptions**: Streamlined workflow for prescribing medications and managing refills.
-*   **Professional Interface**: High-contrast, clean UI designed for fast-paced clinical environments.
+## Tech Stack
 
-## Technology Stack
-
-*   **Framework**: Next.js 15 (App Router)
-*   **Language**: TypeScript
-*   **Styling**: Tailwind CSS v4
-*   **Data Layer**: In-memory data store (optimized for rapid deployment and testing)
-*   **Icons**: Lucide React
+- **Framework**: Next.js (App Router)
+- **Database**: Supabase (Postgres)
+- **ORM**: Prisma
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide React
+- **Validation**: Zod & Custom Logic
 
 ## Getting Started
 
-1.  **Clone the repository**
-    ```bash
-    git clone <repository-url>
-    cd zealthy-app
-    ```
+### 1. Prerequisites
+- Node.js (v18+)
+- A Supabase account and project
 
-2.  **Install dependencies**
-    ```bash
-    npm install
-    ```
+### 2. Environment Variables
+Create a `.env` file in the root directory and add your Supabase connection string:
+```env
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-ID].supabase.co:5432/postgres"
+```
 
-3.  **Run the development server**
-    ```bash
-    npm run dev
-    ```
+### 3. Installation
+```bash
+npm install
+```
 
-    *   **Patient Portal**: [http://localhost:3000](http://localhost:3000)
-    *   **Admin EMR**: [http://localhost:3000/admin](http://localhost:3000/admin)
+### 4. Database Setup
+Push the schema to your Supabase database:
+```bash
+npx prisma db push
+```
 
-## Data Management
+### 5. Seed Data (Optional)
+Populate the database with initial demo patients:
+```bash
+npx prisma db seed
+```
 
-This version of the application uses an **in-memory data store**. 
-*   **Initial Data**: The system is pre-populated with sample patient records (Mark Johnson and Lisa Smith) to demonstrate the full functionality immediately.
-*   **Persistence**: Data persists during the active session. Note that the store resets if the server process is restarted or redeployed.
-*   **Deployment**: Optimized for zero-config deployment on platforms like Vercel without requiring external database setup.
+### 6. Run the Application
+```bash
+npm run dev
+```
 
-## Project Structure
+## Architecture
 
-*   `src/app`: Application routes and page layouts.
-*   `src/components`: Reusable UI components and design system.
-*   `src/actions`: Server-side logic for data mutations (CRUD).
-*   `src/lib`: Core database logic and shared utilities.
+### Database Layer
+The application uses a unified database layer in `src/lib/db.ts` that wraps the Prisma Client. This layer includes:
+- **Input Validation**: Checks for empty fields and valid formats.
+- **Business Logic**: Ensures appointments are in the future and quantities are positive.
+- **Error Handling**: Provides user-friendly error messages for common issues like duplicate emails.
 
+### Server Actions
+All data mutations are handled via Next.js Server Actions in `src/actions/`. These actions include pre-validation to provide immediate feedback to the user.
+
+## Deployment
+
+This application is ready for deployment on **Vercel**. Since it uses Supabase for persistence, data will remain consistent across all serverless instances.

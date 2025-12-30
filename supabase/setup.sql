@@ -1,0 +1,33 @@
+-- Create User table
+CREATE TABLE "User" (
+    "id" SERIAL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "email" TEXT UNIQUE NOT NULL,
+    "password" TEXT NOT NULL,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Appointment table
+CREATE TABLE "Appointment" (
+    "id" SERIAL PRIMARY KEY,
+    "provider" TEXT NOT NULL,
+    "datetime" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "repeat" TEXT DEFAULT 'none',
+    "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create Prescription table
+CREATE TABLE "Prescription" (
+    "id" SERIAL PRIMARY KEY,
+    "medication" TEXT NOT NULL,
+    "dosage" TEXT NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "refillOn" TIMESTAMP WITH TIME ZONE NOT NULL,
+    "refillSchedule" TEXT DEFAULT 'none',
+    "userId" INTEGER NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
+    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
