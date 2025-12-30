@@ -41,12 +41,11 @@ export async function deleteAppointment(id: number) {
             where: { id },
         })
     } catch (error: any) {
-        return { error: error.message || 'Failed to delete appointment' }
+        console.error('Failed to delete appointment:', error)
     }
     revalidatePath('/admin')
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/appointments')
-    return { success: true }
 }
 
 export async function updateAppointment(id: number, formData: FormData) {

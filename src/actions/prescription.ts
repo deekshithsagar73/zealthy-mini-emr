@@ -47,12 +47,11 @@ export async function deletePrescription(id: number) {
             where: { id },
         })
     } catch (error: any) {
-        return { error: error.message || 'Failed to delete prescription' }
+        console.error('Failed to delete prescription:', error)
     }
     revalidatePath('/admin')
     revalidatePath('/dashboard')
     revalidatePath('/dashboard/prescriptions')
-    return { success: true }
 }
 
 export async function updatePrescription(id: number, formData: FormData) {
