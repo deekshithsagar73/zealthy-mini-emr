@@ -4,6 +4,8 @@ import { Users, Calendar, Pill, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { db } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminPage() {
     const patients = await getPatients()
     const totalPatients = patients.length

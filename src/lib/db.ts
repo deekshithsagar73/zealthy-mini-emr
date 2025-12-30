@@ -3,8 +3,6 @@ type User = {
     name: string
     email: string
     password: string
-    appointments: Appointment[]
-    prescriptions: Prescription[]
 }
 
 type Appointment = {
@@ -25,6 +23,15 @@ type Prescription = {
     userId: number
 }
 
+type UserWithRelations = User & {
+    appointments: Appointment[]
+    prescriptions: Prescription[]
+    _count?: {
+        appointments: number
+        prescriptions: number
+    }
+}
+
 const globalForDb = globalThis as unknown as {
     __db: {
         users: User[]
@@ -35,7 +42,6 @@ const globalForDb = globalThis as unknown as {
         nextPrescriptionId: number
     }
 }
-
 
 import seedData from './data.json'
 
@@ -80,9 +86,7 @@ function getDb() {
                 id: user.id,
                 name: user.name,
                 email: user.email,
-                password: user.password,
-                appointments: [],
-                prescriptions: []
+                password: user.password
             })
 
             db.appointments.push(...userAppointments)
@@ -98,24 +102,25 @@ function getDb() {
     return db
 }
 
-
-
-
 export const db = {
     user: {
-        findMany: async () => {
+        findMany: async (): Promise<UserWithRelations[]> => {
             const db = getDb()
-            return db.users.map(user => ({
-                ...user,
-                appointments: db.appointments.filter(a => a.userId === user.id),
-                prescriptions: db.prescriptions.filter(p => p.userId === user.id),
-                _count: {
-                    appointments: db.appointments.filter(a => a.userId === user.id).length,
-                    prescriptions: db.prescriptions.filter(p => p.userId === user.id).length,
+            return db.users.map(user => {
+                const userAppointments = db.appointments.filter(a => a.userId === user.id)
+                const userPrescriptions = db.prescriptions.filter(p => p.userId === user.id)
+                return {
+                    ...user,
+                    appointments: userAppointments,
+                    prescriptions: userPrescriptions,
+                    _count: {
+                        appointments: userAppointments.length,
+                        prescriptions: userPrescriptions.length,
+                    }
                 }
-            })).sort((a, b) => a.name.localeCompare(b.name))
+            }).sort((a, b) => a.name.localeCompare(b.name))
         },
-        findUnique: async (args: { where: { id?: number; email?: string } }) => {
+        findUnique: async (args: { where: { id?: number; email?: string } }): Promise<UserWithRelations | null> => {
             const db = getDb()
             const user = db.users.find(u =>
                 args.where.id ? u.id === args.where.id : u.email === args.where.email
@@ -130,15 +135,20 @@ export const db = {
         },
         create: async (args: { data: { name: string; email: string; password: string } }) => {
             const db = getDb()
+
+            // Check for existing email
+            if (db.users.some(u => u.email === args.data.email)) {
+                throw new Error('A patient with this email already exists.')
+            }
+
             const newUser: User = {
                 id: db.nextUserId++,
                 name: args.data.name,
                 email: args.data.email,
                 password: args.data.password,
-                appointments: [],
-                prescriptions: []
             }
             db.users.push(newUser)
+            console.log(`Created new patient: ${newUser.name} (ID: ${newUser.id})`)
             return newUser
         },
         update: async (args: { where: { id: number }; data: { name?: string; email?: string } }) => {
@@ -147,7 +157,13 @@ export const db = {
             if (!user) throw new Error('User not found')
 
             if (args.data.name) user.name = args.data.name
-            if (args.data.email) user.email = args.data.email
+            if (args.data.email) {
+                // Check if new email is taken by someone else
+                if (db.users.some(u => u.email === args.data.email && u.id !== args.where.id)) {
+                    throw new Error('This email is already in use by another patient.')
+                }
+                user.email = args.data.email
+            }
 
             return user
         },
@@ -244,5 +260,6 @@ export const db = {
     },
 }
 
-export type { User, Appointment, Prescription }
+export type { User, Appointment, Prescription, UserWithRelations }
+
 

@@ -1,9 +1,11 @@
 import { getPatients } from '@/actions/patient'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { User } from '@/lib/db'
+import { UserWithRelations } from '@/lib/db'
 import { Plus, Users, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 
 export default async function PatientsPage() {
     const patients = await getPatients()
@@ -42,7 +44,7 @@ export default async function PatientsPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {patients.map((patient: User & { _count?: { appointments: number; prescriptions: number } }) => (
+                                {patients.map((patient: UserWithRelations) => (
                                     <tr key={patient.id} className="bg-white hover:bg-gray-50/80 transition-colors group">
                                         <td className="px-6 py-4 font-medium text-gray-900">
                                             <div className="flex items-center gap-3">

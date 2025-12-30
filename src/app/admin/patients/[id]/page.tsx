@@ -1,4 +1,4 @@
-import { Appointment, Prescription } from '@/lib/db'
+import { Appointment, Prescription, UserWithRelations } from '@/lib/db'
 import { deleteAppointment } from '@/actions/appointment'
 import { getPatient } from '@/actions/patient'
 import { deletePrescription } from '@/actions/prescription'
@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format } from 'date-fns'
 import { Trash2, Calendar, Pill, ArrowLeft, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 
 export default async function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params

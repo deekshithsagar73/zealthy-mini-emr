@@ -25,8 +25,8 @@ export async function createPatient(formData: FormData) {
         },
     })
 
-    revalidatePath('/admin')
-    redirect('/admin')
+    revalidatePath('/admin/patients')
+    redirect('/admin/patients')
 }
 
 export async function updatePatient(id: number, formData: FormData) {
